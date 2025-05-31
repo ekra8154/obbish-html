@@ -107,3 +107,34 @@ function translateWordToObbish(word) {
     
     return wordParts.join('');
 }
+
+function speakObbish(text) {
+    // Create a new speech synthesis instance
+    const speech = new SpeechSynthesisUtterance(text);
+    
+    // Get all available voices
+    const voices = window.speechSynthesis.getVoices();
+    
+    const ukMaleVoice = voices.find(voice => 
+        voice.name === 'Google UK English Male'
+    );
+    
+    if (ukMaleVoice) {
+        speech.voice = ukMaleVoice;
+    } else {
+        // Fallback to any British English voice
+        const britishVoice = voices.find(voice => 
+            voice.lang === 'en-GB'
+        );
+        if (britishVoice) {
+            speech.voice = britishVoice;
+        }
+    }
+    
+    // Set some properties
+    speech.rate = 1.5;  // Speed
+    speech.pitch = 2; // Pitch
+    speech.volume = 1.0; // Volume
+    
+    window.speechSynthesis.speak(speech);
+}
