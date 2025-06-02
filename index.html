@@ -13,17 +13,34 @@
     </header>
 
     <main>
-        <div class="input-hint">Type in either box to translate in real-time</div>
-        <div class="input-container">
-            <label class="input-label" for="english-input">English Text:</label>
-            <textarea id="english-input" placeholder="Type in English to translate to Obbish"></textarea>
+        <div class="content">
+            <div class="input-hint">Type in either box to translate in real-time</div>
+            <div class="input-container">
+                <label class="input-label" for="english-input">English Text:</label>
+                <textarea id="english-input" placeholder="Type in English to translate to Obbish"></textarea>
+            </div>
+        
+            <div class="input-container">
+                <label class="input-label" for="obbish-input">Obbish Text:</label>
+                <textarea id="obbish-input" placeholder="Type in Obbish to translate to English"></textarea>
+            
+                
+                <div class="controls">
+                    <div>
+                        <label for="speed-slider" class="input-hint">Speed:</label>
+                        <input type="range" id="speed-slider" min="0.1" max="2" step="0.1" value="1.3">
+                        <span id="speed-value">1.3</span>
+                        </div>
+                        
+                        <button onclick="speakObbish(document.getElementById('obbish-input').value)">Read Obbish aloud</button>
+                </div>
+            </div>
         </div>
-    
-        <div class="input-container">
-            <label class="input-label" for="obbish-input">Obbish Text:</label>
-            <textarea id="obbish-input" placeholder="Type in Obbish to translate to English"></textarea>
-            <button onclick="speakObbish(document.getElementById('obbish-input').value)">Read Obbish aloud</button>
-        </div>
+
+        <!-- <div id="gif-container">
+        </div> -->
+        <img id="speaking-gif" src="turkey6.gif" style="display: none;">
+        
     </main>
 
     <script src="script.js"></script>

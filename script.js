@@ -1,6 +1,8 @@
 const englishInput = document.getElementById('english-input');
 const obbishInput = document.getElementById('obbish-input');
 
+let voicesLoaded = false;
+
 let compoundWords = {};
 fetch('silent-e-compound-words.json')
     .then(response => response.json())
@@ -11,9 +13,9 @@ fetch('silent-e-compound-words.json')
     .catch(error => console.error('Error loading compound words:', error));
 
 const vowelSounds = [
-    "oo", "ea", "ou", "ay", "oi", "oy", "au", "aw", "ow",
+    "oo", "ee", "ea", "ou", "ay", "oi", "oy", "au", "aw", "ow",
     "ei", "ey", "ai", "ew", "ue", "ui", "ie", "oa",
-    "a", "e", "i", "o", "u"
+    "a", "e", "i", "o", "u", "y"
 ];
 
 englishInput.addEventListener('input', () => {
@@ -76,6 +78,8 @@ function translateWordToObbish(word) {
     const parts = splitOnVowels(word);
     const wordParts = [];
 
+    let vowelSoundCount = 0;
+
     for (let i = 0; i < parts.length; i++) {
         const part = parts[i];
 
@@ -84,17 +88,25 @@ function translateWordToObbish(word) {
         );
     
         const isUpperCase = letter => letter === letter.toUpperCase();
+
+        if (isVowelSound) {
+            vowelSoundCount++;
+        }
     
         // Capitalize Obb if a vowel is capitalized eg. Epic --> Obbepobbic!
         if (isVowelSound && isUpperCase(part[0])) {
             wordParts.push('Obb' + part[0].toLowerCase() + part.slice(1));
         }
+        // treat all mid-end word y's as vowels
+        else if (part === 'y' && i == 0) {
+            wordParts.push(part);
+        }
         // words like bottle and eagle. 
         else if (part.includes("le")) {
             wordParts.push(part[0].toLowerCase() + 'obb' + part.slice(1));
         }
-        // no obb for silent e
-        else if (part === 'e' && i == parts.length - 1) {
+        // no obb for silent e (when there is more than 1 vowel in the word)
+        else if (part === 'e' && i == parts.length - 1 && vowelSoundCount > 1) {
             wordParts.push(part);
         }
         else if (isVowelSound) {
@@ -108,20 +120,48 @@ function translateWordToObbish(word) {
     return wordParts.join('');
 }
 
-function speakObbish(text) {
-    // Create a new speech synthesis instance
-    const speech = new SpeechSynthesisUtterance(text);
-    
-    // Get all available voices
+function preloadVoice() {
     const voices = window.speechSynthesis.getVoices();
-    
     const ukMaleVoice = voices.find(voice => 
         voice.name === 'Google UK English Male'
     );
     
     if (ukMaleVoice) {
-        speech.voice = ukMaleVoice;
+        voicesLoaded = true;
     } else {
+        // If voices aren't loaded yet, try again
+        setTimeout(preloadVoice, 100);
+    }
+}
+// Call it when the page loads
+document.addEventListener('DOMContentLoaded', preloadVoice);
+
+// Wait for voices to be loaded
+window.speechSynthesis.onvoiceschanged = () => {
+    voicesLoaded = true;
+};
+
+function speakObbish(text) {
+    // If voices aren't loaded yet, wait a bit and try again
+    if (!voicesLoaded) {
+        setTimeout(() => speakObbish(text), 100);
+        return;
+    }
+
+    // Create a new speech synthesis instance
+    const speech = new SpeechSynthesisUtterance(text);
+    
+    // Get all available voices
+    const voices = window.speechSynthesis.getVoices();
+
+    const ukMaleVoice = voices.find(voice => 
+        voice.name === 'Google UK English Male'
+    );
+
+    if (ukMaleVoice) {
+        speech.voice = ukMaleVoice;
+    } 
+    else {
         // Fallback to any British English voice
         const britishVoice = voices.find(voice => 
             voice.lang === 'en-GB'
@@ -131,10 +171,37 @@ function speakObbish(text) {
         }
     }
     
-    // Set some properties
-    speech.rate = 1.5;  // Speed
-    speech.pitch = 2; // Pitch
+    speech.rate = parseFloat(document.getElementById('speed-slider').value);
+    speech.pitch = 1.7; // Pitch
     speech.volume = 1.0; // Volume
     
+    speech.onstart = () => {
+        const gif = document.getElementById('speaking-gif');
+        updateGifHeight(); // Update height before showing
+        gif.style.display = 'block';
+    };
+    
+    speech.onend = () => {
+        document.getElementById('speaking-gif').style.display = 'none';
+    };
+
     window.speechSynthesis.speak(speech);
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('speed-slider').addEventListener('input', function(e) {
+        document.getElementById('speed-value').textContent = e.target.value;
+    });
+});
+
+function updateGifHeight() {
+    const content = document.querySelector('.content');
+    const gif = document.getElementById('speaking-gif');
+    gif.style.height = content.offsetHeight + 'px';
+}
+
+// Call it when the page loads
+document.addEventListener('DOMContentLoaded', updateGifHeight);
+
+// Call it when the window resizes
+window.addEventListener('resize', updateGifHeight);

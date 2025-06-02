@@ -18,7 +18,8 @@ h1 {
 
 main {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
     gap: 1rem;
     background-color: white;
     padding: 2rem;
@@ -103,4 +104,41 @@ button:hover {
     border-radius: 5px;
     background-color: #f8f9fa;
     font-size: 1rem;
+}
+
+input[type="range"] {
+    margin: 0;
+    padding: 0;
+    height: 5px;
+}
+
+.controls {
+    display: flex;
+    gap: 3rem;
+    align-items: center;
+}
+
+.voice-select {
+    padding: 0.3rem 0.8rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.voice-select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+}
+
+/* .content {
+    flex: 1;
+    max-width: 50%;
+} */
+
+#speaking-gif {
+    height: 100%;
 }
